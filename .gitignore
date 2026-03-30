@@ -1,2 +1,30 @@
-# .gitignore
+# ===========================
+# SEGURANÇA — NUNCA SUBIR
+# ===========================
 .env
+env
+*.env
+application-prod.properties
+application-secret.properties
+secrets.properties
+
+# ===========================
+# JAVA / MAVEN
+# ===========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# ===========================
+# SPRING BOOT
+# ===========================
+# Arquivos gerados de build
+HELP.md
+
+# VS Code
+.vscode/
+*.code-workspace
