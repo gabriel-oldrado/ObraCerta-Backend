@@ -1,10 +1,6 @@
 package com.obracerta.crud_usuario.controller;
 
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,33 +8,24 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.obracerta.crud_usuario.dto.LoginDTO;
 import com.obracerta.crud_usuario.dto.UsuarioCadastroDTO;
 import com.obracerta.crud_usuario.dto.UsuarioResponseDTO;
 import com.obracerta.crud_usuario.dto.UsuarioUpdateDTO;
 import com.obracerta.crud_usuario.model.Usuario;
 import com.obracerta.crud_usuario.service.UsuarioService;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
-import org.springframework.security.core.context.SecurityContextHolder; // <-- ADICIONE ESTE IMPORT
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
-
-@SuppressWarnings("unused")
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -49,16 +36,13 @@ public class UsuarioController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @PostMapping("/cadastro")
-    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody UsuarioCadastroDTO dto ){
+    public ResponseEntity<UsuarioResponseDTO> cadastrarUsuario(@RequestBody UsuarioCadastroDTO dto ){
         try {
             Usuario usuarioSalvo = usuarioService.cadastrar(dto);
-            // Retorna o usuário salvo com status 201 (Created)
-            return new ResponseEntity<>(usuarioSalvo, HttpStatus.CREATED);
+            return new ResponseEntity<>(new UsuarioResponseDTO(usuarioSalvo), HttpStatus.CREATED);
         } catch (RuntimeException e) {
-            // Retorna 400 (Bad Request) se o email já existir (ou outra falha)
-            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -83,7 +67,6 @@ public class UsuarioController {
         }
     }
 
-    // NOVO: Endpoint de Update
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizarUsuario(@PathVariable Long id, @RequestBody UsuarioUpdateDTO dto) {
         try {
@@ -94,7 +77,6 @@ public class UsuarioController {
         }
     }
 
-    // NOVO: Endpoint de Delete
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarUsuario(@PathVariable Long id) {
         try {
@@ -111,17 +93,12 @@ public class UsuarioController {
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
 
-    // NOVO: Endpoint GET para Buscar um Usuário por ID
-    // (GET /api/usuarios/{id})
-    // Note que este @GetMapping("/{id}") é DIFERENTE do @PutMapping("/{id}")
-    // e @DeleteMapping("/{id}") porque o *verbo* HTTP é diferente.
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarUsuarioPorId(@PathVariable Long id) {
         try {
             UsuarioResponseDTO usuario = usuarioService.buscarPorId(id);
             return new ResponseEntity<>(usuario, HttpStatus.OK);
         } catch (RuntimeException e) {
-            // Retorna 404 (Not Found) se o service lançar a exceção
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND); 
         }
     }       
